@@ -1,5 +1,5 @@
 // 精确时间戳双语字幕数据
-const preciseSubtitleData = {
+window.preciseSubtitleData = {
   "1": [
     {
       index: 1,

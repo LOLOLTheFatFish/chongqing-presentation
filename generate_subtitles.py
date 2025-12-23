@@ -34,7 +34,7 @@ js_content += '''};
 
 // 导出字幕数据
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = subtitleData;
+    module.exports = window.preciseSubtitleData;
 }
 '''
 
