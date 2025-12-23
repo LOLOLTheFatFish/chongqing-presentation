@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slide 9 - Four Pillars</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { margin: 0; padding: 0; overflow: hidden; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background: #002244; color: white; }
+        .slide-container { width: 1280px; height: 720px; display: flex; }
+        .left { width: 400px; padding: 60px; display: flex; flex-direction: column; justify-content: center; background: #002B49; }
+        .right { flex: 1; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+        .title { font-size: 64px; font-weight: 700; line-height: 1.1; margin-bottom: 30px; }
+        .subtitle { font-size: 24px; color: #FFCC00; }
+        .grid-item { border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; justify-content: center; padding: 40px; transition: background 0.3s; }
+        .grid-item:hover { background: rgba(255,255,255,0.05); }
+        .grid-title { font-size: 28px; font-weight: 700; margin-bottom: 15px; color: #FFCC00; display: flex; align-items: center; gap: 15px; }
+        .grid-text { font-size: 18px; line-height: 1.5; color: #DDD; }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="left">
+            <div class="title">The 4 Pillars of Success</div>
+            <div class="subtitle">A Holistic Foundation</div>
+        </div>
+        <div class="right">
+            <div class="grid-item">
+                <div class="grid-title"><i data-lucide="landmark"></i> Politics</div>
+                <div class="grid-text">Strong government support for tourism infrastructure and city branding initiatives.</div>
+            </div>
+            <div class="grid-item">
+                <div class="grid-title"><i data-lucide="trending-up"></i> Economics</div>
+                <div class="grid-text">Thriving "Night Economy" and affordable consumption levels attract masses.</div>
+            </div>
+            <div class="grid-item">
+                <div class="grid-title"><i data-lucide="users"></i> Social</div>
+                <div class="grid-text">Hospitality culture and unique "mountain city" lifestyle appeal to youth.</div>
+            </div>
+            <div class="grid-item">
+                <div class="grid-title"><i data-lucide="wifi"></i> Technology</div>
+                <div class="grid-text">Leveraging social media algorithms and digital payment ecosystems.</div>
+            </div>
+        </div>
+    </div>
+    <script>lucide.createIcons();</script>
+</body>
+</html>

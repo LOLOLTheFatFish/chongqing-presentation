@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slide 15 - WO Strategy</title>
+    <style>
+        body { margin: 0; padding: 0; overflow: hidden; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background: #FFFFFF; }
+        .slide-container { width: 1280px; height: 720px; display: flex; }
+        .content-area { flex: 1; padding: 60px; display: flex; flex-direction: column; justify-content: center; }
+        .matrix-area { width: 500px; background: #F5F5F5; padding: 40px; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 10px; }
+        
+        .header { font-size: 48px; font-weight: 700; color: #003366; margin-bottom: 20px; }
+        .sub-header { font-size: 28px; color: #FFCC00; font-weight: 700; margin-bottom: 40px; text-transform: uppercase; letter-spacing: 1px; }
+        .point { font-size: 24px; margin-bottom: 20px; padding-left: 20px; border-left: 4px solid #FFCC00; line-height: 1.5; color: #333; }
+        
+        .m-box { background: #DDD; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #666; font-size: 24px; }
+        .active { background: #FFCC00; color: #003366; box-shadow: 0 0 20px rgba(255, 204, 0, 0.4); transform: scale(1.05); z-index: 2; }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="content-area">
+            <div class="header">WO Strategy</div>
+            <div class="sub-header">Turnaround Play</div>
+            <div class="point"><strong>Logic:</strong> Overcome internal weaknesses by exploiting external opportunities.</div>
+            <div class="point"><strong>Focus:</strong> Fix infrastructure bottlenecks and "over-tourism" complaints through smart city tech.</div>
+        </div>
+        <div class="matrix-area">
+            <div class="m-box">SO</div>
+            <div class="m-box active">WO<br>Turnaround</div>
+            <div class="m-box">ST</div>
+            <div class="m-box">WT</div>
+        </div>
+    </div>
+</body>
+</html>

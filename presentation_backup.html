@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PPT Presentation Viewer with Audio</title>
+    <style>
+        :root {
+            --text-color: #111111;
+            --secondary-text: #666666;
+            --bg-color: #ffffff;
+            --light-bg: #f8f8f8;
+            --dark-bg: #111111;
+            --border-color: #e0e0e0;
+            --hover-color: #f0f0f0;
+            --active-color: #000000;
+            --shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 1px 4px rgba(0, 0, 0, 0.05), 0 2px 8px rgba(0, 0, 0, 0.05);
+            --btn-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+            --card-radius: 4px;
+            --btn-radius: 4px;
+            
+            /* Audio controls colors */
+            --audio-primary: #003366;
+            --audio-accent: #FFCC00;
+            --audio-bg: #1a1a1a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            color: var(--text-color);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            background-color: var(--dark-bg);
+            color: white;
+            margin-bottom: 32px;
+            border-radius: var(--card-radius);
+            box-shadow: var(--shadow);
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .view-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .view-btn {
+            padding: 8px 16px;
+            border: none;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-radius: var(--btn-radius);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+        }
+
+        .view-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .view-btn.active {
+            background-color: var(--audio-accent);
+            color: var(--audio-primary);
+        }
+
+        .start-button {
+            padding: 12px 24px;
+            background-color: var(--audio-accent);
+            color: var(--audio-primary);
+            border: none;
+            border-radius: var(--btn-radius);
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            box-shadow: var(--btn-shadow);
+            transition: all 0.2s ease;
+            margin-bottom: 24px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .start-button:hover {
+            background-color: #e6b800;
+            transform: translateY(-1px);
+        }
+
+        /* Preview containers */
+        .preview-container {
+            display: grid;
+            gap: 24px;
+        }
+
+        .preview-container.grid-view {
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+        }
+
+        .preview-container.list-view {
+            grid-template-columns: 1fr;
+        }
+
+        .slide-preview {
+            background-color: var(--bg-color);
+            border-radius: var(--card-radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .slide-preview:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .slide-preview.active {
+            border: 2px solid var(--audio-accent);
+        }
+
+        .slide-number {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            z-index: 2;
+        }
+
+        .slide-frame-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16/9;
+            overflow: hidden;
+        }
+
+        .slide-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            transform-origin: top left;
+        }
+
+        /* Presentation mode */
+        .presentation-mode {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .presentation-slide {
+            width: 1280px;
+            height: 720px;
+            border: none;
+            transform-origin: center center;
+        }
+
+        .presentation-slide-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            width: 100%;
+            padding: 20px;
+        }
+
+        /* Unified Controls */
+        .unified-controls {
+            height: 80px;
+            background-color: var(--audio-bg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 24px;
+            padding: 0 24px;
+            position: relative;
+            z-index: 1001;
+        }
+
+        .unified-controls.fullscreen {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .unified-controls.fullscreen:hover,
+        .unified-controls.fullscreen.show {
+            opacity: 1;
+        }
+
+        .audio-controls-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            min-width: 350px;
+        }
+
+        .ppt-controls-section {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: absolute;
+            bottom: 8px;
+            right: 24px;
+        }
+
+        .play-pause-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background-color: var(--audio-accent);
+            border: none;
+            color: var(--audio-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .play-pause-btn:hover {
+            background-color: #e6b800;
+            transform: scale(1.05);
+        }
+
+        .audio-progress {
+            flex: 1;
+            max-width: 280px;
+            height: 6px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            cursor: pointer;
+            position: relative;
+            margin: 0 20px;
+        }
+
+        .audio-progress-fill {
+            height: 100%;
+            background-color: var(--audio-accent);
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.1s ease;
+        }
+
+        .audio-time {
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            min-width: 100px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        /* Subtitle Controls */
+        .subtitle-controls {
+            position: absolute;
+            top: 16px;
+            right: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 1002;
+        }
+
+        .subtitle-toggle {
+            padding: 6px 12px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+        }
+
+        .subtitle-toggle:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .subtitle-toggle.active {
+            background-color: var(--audio-accent);
+            color: var(--audio-primary);
+        }
+
+        /* Subtitle Display */
+        .subtitle-container {
+            position: absolute;
+            bottom: 140px;
+            left: 50%;
+            transform: translateX(-50%);
+            max-width: 80%;
+            text-align: center;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .subtitle-container.show {
+            opacity: 1;
+        }
+
+        .subtitle-text {
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-size: 16px;
+            line-height: 1.5;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+            margin-bottom: 8px;
+        }
+
+        .subtitle-text.english {
+            font-weight: 500;
+            font-size: 18px;
+        }
+
+        .subtitle-text.chinese {
+            font-size: 16px;
+            font-weight: 400;
+            opacity: 0.9;
+        }
+
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .speed-btn {
+            padding: 6px 12px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+        }
+
+        .speed-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .speed-btn.active {
+            background-color: var(--audio-accent);
+            color: var(--audio-primary);
+        }
+
+
+
+        .progress-bar {
+            flex: 1;
+            max-width: 300px;
+            height: 6px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 0 20px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--audio-accent);
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.1s ease;
+        }
+
+        .slide-indicators {
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            min-width: 80px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .control-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-radius: var(--btn-radius);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .control-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Audio indicator */
+        .audio-indicator {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background-color: var(--audio-accent);
+            color: var(--audio-primary);
+            border-radius: 12px;
+            padding: 4px 8px;
+            font-size: 10px;
+            font-weight: 600;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .audio-indicator.playing {
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .audio-indicator svg {
+            width: 8px;
+            height: 8px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 16px;
+            }
+            
+            .preview-container.grid-view {
+                grid-template-columns: 1fr;
+            }
+            
+            .unified-controls {
+                height: auto;
+                flex-direction: column;
+                padding: 16px;
+                gap: 12px;
+            }
+            
+            .audio-controls-section {
+                min-width: auto;
+                gap: 16px;
+            }
+            
+            .audio-progress {
+                max-width: none;
+                margin: 0 10px;
+            }
+            
+            .ppt-controls-section {
+                gap: 12px;
+            }
+            
+            .speed-control {
+                position: static;
+                flex-wrap: wrap;
+                gap: 4px;
+                justify-content: center;
+            }
+            
+            .speed-btn {
+                padding: 4px 8px;
+                font-size: 11px;
+            }
+            
+            /* Mobile subtitle optimizations */
+            .subtitle-controls {
+                top: 8px;
+                right: 16px;
+            }
+            
+            .subtitle-toggle {
+                padding: 4px 8px;
+                font-size: 10px;
+            }
+            
+            .subtitle-container {
+                bottom: 120px;
+                max-width: 90%;
+            }
+            
+            .subtitle-text {
+                padding: 8px 12px;
+                font-size: 14px;
+            }
+            
+            .subtitle-text.english {
+                font-size: 15px;
+            }
+            
+            .subtitle-text.chinese {
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Chongqing: From Wanghong to Changhong</h1>
+            <div class="view-controls">
+                <button id="grid-view-btn" class="view-btn">Grid View</button>
+                <button id="list-view-btn" class="view-btn active">List View</button>
+            </div>
+        </header>
+
+        <button id="play-button" class="start-button">🎯 Auto Play Presentation</button>
+
+        <div id="preview-container" class="preview-container list-view">
+            <!-- Slide previews will be generated here -->
+        </div>
+    </div>
+
+    <!-- Presentation Mode -->
+    <div id="presentation-mode" class="presentation-mode">
+        <div class="presentation-slide-container">
+            <iframe id="presentation-slide" class="presentation-slide" frameborder="0"></iframe>
+            
+            <!-- Subtitle Controls -->
+            <div class="subtitle-controls">
+                <button id="subtitle-toggle" class="subtitle-toggle">🎬 Subtitles</button>
+            </div>
+            
+            <!-- Subtitle Display -->
+            <div id="subtitle-container" class="subtitle-container">
+                <div id="subtitle-english" class="subtitle-text english"></div>
+                <div id="subtitle-chinese" class="subtitle-text chinese"></div>
+            </div>
+        </div>
+        
+        <!-- Unified Controls -->
+        <div id="unified-controls" class="unified-controls">
+            <!-- Audio Controls (Left) -->
+            <div class="audio-controls-section">
+                <button id="play-pause-btn" class="play-pause-btn">▶</button>
+                <div class="audio-progress" id="audio-progress">
+                    <div class="audio-progress-fill" id="audio-progress-fill"></div>
+                </div>
+                <div class="audio-time">
+                    <span id="audio-current-time">0:00</span> / <span id="audio-duration">0:00</span>
+                </div>
+            </div>
+            
+            <!-- PPT Controls (Right) -->
+            <div class="ppt-controls-section">
+                <button id="prev-slide" class="control-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                </button>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                <div class="slide-indicators">
+                    <span id="current-slide">1</span>/<span id="total-slides">22</span>
+                </div>
+                <button id="next-slide" class="control-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </button>
+                <button id="fullscreen-toggle" class="control-btn" title="Toggle Fullscreen">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+                    </svg>
+                </button>
+                <button id="exit-presentation" class="control-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="9" y1="9" x2="15" y2="15"></line>
+                        <line x1="15" y1="9" x2="9" y2="15"></line>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Speed Control (Bottom Right) -->
+            <div class="speed-control">
+                <span style="color: white; font-size: 12px; margin-right: 8px;">Speed:</span>
+                <button class="speed-btn" data-speed="0.5">0.5x</button>
+                <button class="speed-btn active" data-speed="1">1x</button>
+                <button class="speed-btn" data-speed="1.25">1.25x</button>
+                <button class="speed-btn" data-speed="1.5">1.5x</button>
+                <button class="speed-btn" data-speed="2">2x</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Subtitle data (inline for reliability)
+        const subtitleData = [
+          {
+            slide: 1,
+            english: "So let's talk about Chongqing. You've probably seen it. It's that mind-bending Chinese megacity that just completely took over the internet. You know, the 8D Magic city with buildings you can drive a train through. And that famously spicy hot pot that absolutely nailed going viral. But all of this success brings up one really, really important question.",
+            chinese: "那么，我们来聊聊重庆。你很可能已经见过了。就是那座令人匪夷夷的中国特大城市，它简直刷爆了全网。你知道的，就是那座8D魔幻之都，轻轨可以从大楼里穿过。还有那著名的麻辣火锅，他们也成功地让它火出了圈。但所有这些成功也带来了一个非常非常重要的问题。"
+          },
+          {
+            slide: 2,
+            english: "Right? It sounds like a great problem to have, but it can be a total trap. How do you actually convert all that temporary algorithm-driven hype into something that lasts? You know, how do you make sure your city isn't just a one-hit wonder?",
+            chinese: "对吧？这听起来像是个甜蜜的烦恼，但它也可能是一个彻头彻尾的陷阱。你到底该如何把所有这些由算法驱动的暂时热度，转化为能持久的东西呢？你懂的，你如何确保你的城市不只是一个昙花一现的网红？"
+          },
+          {
+            slide: 3,
+            english: "And you know, the analysis we're digging into today just nails this. The whole challenge is about moving from being Wang Hong, which means internet famous, super trendy, but can disappear in a flash, to being Chang Hong, which is like evergreen. Think classic, timeless, something people always want to visit. So the billion-dollar question is, how on earth do you make that jump?",
+            chinese: "你知道，我们今天深入研究的这份分析报告正好抓住了这一点。整个挑战的核心就是如何从网红，意思是网络知名度高、超级新潮，但可能瞬间消失，转变为长红，也就是常青树。想象一下经典、永恒，是那种人们总想去参观的地方。所以，这个价值千金的问题就是，你到底要怎样才能实现这个跳跃呢？"
+          },
+          {
+            slide: 4,
+            english: "And trust me, the stakes are unbelievably high. This isn't just about getting likes on a video. Take a look at that number. That's over 500 billion yuan. That's the city's domestic tourism revenue for 2024. We are talking about a gigantic economic engine that they have to keep running smoothly.",
+            chinese: "相信我，这其中的利害关系高得令人难以置信。这不仅仅是为了在视频上获得点赞。看看那个数字。那是超过5万亿人民币。这是该市2024年的国内旅游收入。我们谈论的是一个他们必须保持平稳运行的庞大经济引擎。"
+          },
+          {
+            slide: 5,
+            english: "And this brings us right to the heart of the problem, what we can call the fame trap, because Chongqing's wild success is also its biggest weakness. It is the definition of a double-edged sword.",
+            chinese: "这就把我们带到了问题的核心，也就是我们所说的声名陷阱，因为重庆的巨大成功同时也是它最大的弱点。这正是双刃剑这个词的完美定义。"
+          },
+          {
+            slide: 6,
+            english: "So the analysis breaks it down into two major threats. First, the city is way too reliant on that internet famous label, you know how it is, trends change, what looks amazing and futuristic one day can feel kind of played out the next, people get tired of seeing the same thing. And second, the competition is just insane in China's travel market, some other city is always just one viral video away from becoming the new 'it' spot.",
+            chinese: "所以，这份分析将其分解为两大主要威胁。首先，这座城市过分依赖那个网红标签了，你也知道情况就是这样，潮流总是在变。今天看起来很神奇、很未来的东西，明天可能就让人觉得有点老套了，人们会厌倦看同样的东西。其次，中国旅游市场的竞争简直到了疯狂的地步，其他城市总是离成为下一个爆款打卡地只有一支病毒视频的距离。"
+          },
+          {
+            slide: 7,
+            english: "And this quote just says it all, doesn't it? In the age of short-form video the bar for becoming an internet famous city is almost non-existent, any city with a cool gimmick can suddenly steal the spotlight, which makes that viral fame model super, super unstable.",
+            chinese: "而这句话简直说明了一切，不是吗？在这个短视频时代，成为一个网红城市的门槛几乎不存在，任何一个有点酷的噱头的城市都可以突然抢走聚光灯，这使得那种病毒式成名模式变得超级、超级不稳定。"
+          },
+          {
+            slide: 8,
+            english: "Okay, so before we get into the fix, let's just quickly look at how Chongqing even pulled this off. I mean, this didn't just happen by accident, it was really a perfect storm of the right factors coming together at the right time.",
+            chinese: "好了，那么在我们深入探讨解决方案之前，让我们先快速回顾一下重庆当初到底是如何做到的。我的意思是，这绝非偶然，它实际上是多种正确因素在正确的时间汇集到一起所形成的完美风暴。"
+          },
+          {
+            slide: 9,
+            english: "So you've got these four pillars holding it all up. Politically you have the government pushing for integration with its neighbor Sichuan. Economically, people just had more money to spend, especially after the pandemic, creating this huge travel boom. Socially, the city was smart, It jumped on new trends like City Walk instead of just pushing the same old sites. And finally, technology, a massive upgrade in transportation is making it easier than ever to get in and out. But this very success story was pointing towards something else.",
+            chinese: "有这四大支柱在支撑着这一切。政治上，你有政府在推动与邻省四川的一体化发展。经济上，人们手头有了更多的钱可以消费，尤其是在疫情之后，这催生了巨大的旅游热潮。社会层面，这座城市很聪明，它迅速抓住了像城市漫步这样的新潮流，而不是一味地推广那些老掉牙的景点。最后是技术层面，交通运输的巨大升级使得进出重庆变得前所未有的容易。但正是这个成功故事本身，也正指向了别的东西。"
+          },
+          {
+            slide: 10,
+            english: "Yeah, all of those things created this incredible boom in domestic travel, but it was kind of like a massive spotlight that didn't just illuminate the success, it also cast a shadow revealing this huge untapped market just sitting there waiting.",
+            chinese: "是的，所有这些因素共同造就了国内旅游业的惊人繁荣，但这又有点像一束巨大的聚光灯，它不仅照亮了成功，也投下了一片阴影，在这片阴影中显现出了一个巨大的、尚未开发的市场，正静静地等在那里。"
+          },
+          {
+            slide: 11,
+            english: "And here it is, wow, while everyone was laser focused on the domestic tourists, look at this, a more than 183% jump in international arrivals in 2024. That is not just a little bump. That is a massive signal that there's a whole new engine for growth just waiting to be fired up.",
+            chinese: "答案揭晓了，哇哦！就在所有人都激光聚焦在国内游客身上时，快看这个——2024年的国际入境游客数量增长了超过183%！这可不仅仅是一个小小的波动。这是一个极其强烈的信号，表明有一个全新的增长引擎正等待着被点燃。"
+          },
+          {
+            slide: 12,
+            english: "Okay, so that leads us to the solution, tapping into that huge international opportunity is the key to chongqing's whole strategic playbook. It's a four-part plan to turn it from a viral hit into a truly evergreen destination.",
+            chinese: "好的，这就引导我们找到了解决方案。开拓那个巨大的国际机遇，就是重庆整个战略手册的关键所在。这是一个分为四部分的计划，旨在将其从一个病毒式爆款转变为一个真正的常青树旅游地。"
+          },
+          {
+            slide: 13,
+            english: "The first move is pure offense. It's the SO strategy, that just means using your inherent strengths to seize outside opportunities. The big idea here is to leverage what Chongqing is already good at, like its unique culture and all that government support, to grab the huge opportunity of a unified market with its neighbor SiChuan. Basically, stop competing and start working together.",
+            chinese: "第一个行动是纯粹的进攻。这就是SO策略。意思就是利用你的内在优势去抓住外部机遇。这里的核心构想是杠杆化重庆已经擅长的东西，比如它独特的文化和所有的那些政府支持，去抓住与邻省四川形成统一市场的巨大机遇。基本上就是停止竞争，开始合作。"
+          },
+          {
+            slide: 14,
+            english: "So what does that actually look like? Well, for starters, you create travel packages that cover both regions built around shared history, and here's the kicker, you market it to the world as one powerful brand, the bashu region, making the entire area a must-see, not just one city.",
+            chinese: "那么，这具体看起来是什么样的呢？嗯，首先，你创建覆盖两个地区的旅游套餐，这些套餐要围绕着共同的历史来打造。然后，重头戏来了：你把它作为一个统一的强大品牌——巴蜀地区——向全世界推广，让整个区域成为一个必看之地，而不仅仅是（重庆）一座城市。"
+          },
+          {
+            slide: 15,
+            english: "Alright, next up is the WO strategy. Think of this as a turnaround play, you're tackling your internal weaknesses by taking advantage of external opportunities. The weakness? Chongqing is way too dependent on online travel agencies and can get super overcrowded. The opportunity? Tourists are now demanding higher quality, unique experiences.",
+            chinese: "好了，接下来是WO策略。你可以把这看作一个扭转战，你通过利用外部机遇来解决你的内部弱点。弱点是什么？重庆过分依赖在线旅行社，而且可能会变得超级拥挤。机遇是什么？游客现在要求的是更高质量、更独特的体验。"
+          },
+          {
+            slide: 16,
+            english: "So this is all about taking back control. You beef up the city's official app with exclusive deals on local stuff you can't get anywhere else, that pulls people away from the giant travel platforms, and you use data to actually manage the crowds, guiding people to cool new neighborhoods instead of letting everyone pile into the same three tourist traps.",
+            chinese: "所以，这一招的核心就是夺回控制权。你得强化城市的官方APP，用那些你在别处根本拿不到的独家优惠和本地特色产品，把人们从那些巨头旅游平台上拉开。同时，你利用数据来真正地管理人群，引导人们去那些很酷的新街区，而不是让所有人都挤进那几个老一套的游客陷阱里。"
+          },
+          {
+            slide: 17,
+            english: "Path number 3 is all about defense. This is the ST strategy, which means using your unique strengths to neutralize those outside threats. It's about building a competitive moat around your city. How do you stop other places from copying you? You double down on the things that are impossible to replicate.",
+            chinese: "第三条路径完全是关于防御。这就是ST策略，意思就是利用你的独特优势来抵御那些外部威胁。这关乎于在你的城市周围建立一条竞争护城河。你如何阻止其他地方抄袭你？（答案是）你必须加倍投入那些无法被复制的东西。"
+          },
+          {
+            slide: 18,
+            english: "This means you've got to shift the story you're telling. The 8D Magic City stuff looks cool sure, but other places can build futuristic stuff. What they can't copy is the deep ancient history of the Three Gorges. It also means making amazing service, like literally closing roads for tourists, a standard feature of the brand, not just a one-off viral stunt.",
+            chinese: "这意味着你必须转变你正在讲述的故事。那个8D魔幻之都的东西看起来很酷。当然，其他地方也能建造充满未来感的东西。但他们无法复制的，是三峡深厚的古老历史。这也意味着你要把优质的服务——比如真正地为游客封路——变成一个品牌的标准特色，而不仅仅是一次偶然的病毒式噱头。"
+          },
+          {
+            slide: 19,
+            english: "And the last path, the WT strategy, this one is about changing the game entirely, it's about tackling your internal weaknesses, which are vulnerable to external threats by just pivoting to a whole new market.",
+            chinese: "最后一条路径，WT策略。这一条是关于彻底改变游戏规则的。它是关于通过转向一个全新的市场，来解决那些容易受到外部威胁攻击的内部弱点。"
+          },
+          {
+            slide: 20,
+            english: "And this is that big pivot we saw earlier. It means you start shifting your marketing dollars away from the hyper-competitive domestic market, the Red Sea, and into the wide open blue ocean of international travelers, especially after 2025. And for that audience, you drop the internet famous angle. The new story is all about the grandeur of the Yangtze River civilization and the practicality of being a huge visa-free transit hub.",
+            chinese: "这就是我们前面提到过的那个大转向。这意味着你开始把你的营销资金从高度竞争的国内市场，也就是红海，转移开，投向国际游客那片广阔的、开放的蓝海。而对这部分受众，你要抛弃网红的那个角度。新的故事将完全是关于长江文明的宏伟壮丽，以及作为一个巨大的免签过境枢纽的实用性。"
+          },
+          {
+            slide: 21,
+            english: "So when you put all four of these strategies together, your offense, your turnaround, your defense, and your big pivot, the end goal is crystal clear. It's a full on plan to evolve from a passing social media trend into a truly timeless global destination. from Wang Hong to Chong Hong.",
+            chinese: "所以，当你把所有这四种策略——你的进攻、你的扭转、你的防御和你的大转向——结合在一起时，最终目标就变得无比清晰了。这是一个全面的计划，旨在从一个短暂易逝的社交媒体潮流，进化成一个真正永恒的全球目的地。从网红变为长红。"
+          },
+          {
+            slide: 22,
+            english: "So Chongqing has its playbook, it's a smart, clear path forward. But it kind of leaves us with a much bigger question, doesn't it? In an age where what we see and where we go is so heavily influenced by these mysterious algorithms, can any long-term plan really, truly outsmart the internet? That's something every city in the world has to be thinking about right now.",
+            chinese: "所以，重庆有了它的战略手册，这是一条清晰、明智的前进之路。但这似乎给我们留下了一个更大的问题，不是吗？在这个我们所见和所去之处都深受这些神秘算法巨大影响的时代，真的有任何长期计划，能够真正地智胜互联网吗？这是全世界每个城市现在都必须思考的问题。"
+          }
+        ];
+        
+        // Load the slides data
+        const slides = [
+            "slides/slide1.html", "slides/slide2.html", "slides/slide3.html", "slides/slide4.html", 
+            "slides/slide5.html", "slides/slide6.html", "slides/slide7.html", "slides/slide8.html", 
+            "slides/slide9.html", "slides/slide10.html", "slides/slide11.html", "slides/slide12.html", 
+            "slides/slide13.html", "slides/slide14.html", "slides/slide15.html", "slides/slide16.html", 
+            "slides/slide17.html", "slides/slide18.html", "slides/slide19.html", "slides/slide20.html", 
+            "slides/slide21.html", "slides/slide22.html"
+        ];
+
+        // Audio files mapping
+        const audioFiles = [
+            "audio/slide1.mp3", "audio/slide2.mp3", "audio/slide3.mp3", "audio/slide4.mp3",
+            "audio/slide5.mp3", "audio/slide6.mp3", "audio/slide7.mp3", "audio/slide8.mp3",
+            "audio/slide9.mp3", "audio/slide10.mp3", "audio/slide11.mp3", "audio/slide12.mp3",
+            "audio/slide13.mp3", "audio/slide14.mp3", "audio/slide15.mp3", "audio/slide16.mp3",
+            "audio/slide17.mp3", "audio/slide18.mp3", "audio/slide19.mp3", "audio/slide20.mp3",
+            "audio/slide21.mp3", "audio/slide22.mp3"
+        ];
+
+        let currentSlideIndex = 0;
+        let viewMode = 'list';
+        let isFullscreen = false;
+        let controlsTimeout;
+        
+        // Audio state
+        let currentAudio = null;
+        let isPlaying = false;
+        let currentSpeed = 1.0;
+        let autoPlay = false;
+        let isAutoPlayEnabled = false;
+        
+        // Subtitle state
+        let subtitlesEnabled = false;
+        let currentSubtitle = null;
+        let subtitleHideTimeout;
+
+        // DOM elements
+        const previewContainer = document.getElementById('preview-container');
+        const presentationMode = document.getElementById('presentation-mode');
+        const presentationSlide = document.getElementById('presentation-slide');
+        const playButton = document.getElementById('play-button');
+        const prevButton = document.getElementById('prev-slide');
+        const nextButton = document.getElementById('next-slide');
+        const exitButton = document.getElementById('exit-presentation');
+        const fullscreenToggle = document.getElementById('fullscreen-toggle');
+        const progressFill = document.getElementById('progress-fill');
+        const currentSlideElement = document.getElementById('current-slide');
+        const totalSlidesElement = document.getElementById('total-slides');
+        const gridViewBtn = document.getElementById('grid-view-btn');
+        const listViewBtn = document.getElementById('list-view-btn');
+
+        // Unified control elements
+        const unifiedControls = document.getElementById('unified-controls');
+        const playPauseBtn = document.getElementById('play-pause-btn');
+        const audioProgress = document.getElementById('audio-progress');
+        const audioProgressFill = document.getElementById('audio-progress-fill');
+        const audioCurrentTime = document.getElementById('audio-current-time');
+        const audioDuration = document.getElementById('audio-duration');
+        const speedBtns = document.querySelectorAll('.speed-btn');
+        
+        // Subtitle elements
+        const subtitleToggle = document.getElementById('subtitle-toggle');
+        const subtitleContainer = document.getElementById('subtitle-container');
+        const subtitleEnglish = document.getElementById('subtitle-english');
+        const subtitleChinese = document.getElementById('subtitle-chinese');
+
+        // Initialize the viewer
+        function initViewer() {
+            totalSlidesElement.textContent = slides.length;
+            generatePreviews();
+            setupViewModeButtons();
+            setupAudioControls();
+        }
+
+        // Generate slide previews
+        function generatePreviews() {
+            previewContainer.innerHTML = '';
+
+            let loadedCount = 0;
+            const totalSlides = slides.length;
+
+            slides.forEach((slide, index) => {
+                const slidePreview = document.createElement('div');
+                slidePreview.className = 'slide-preview';
+                if (index === currentSlideIndex) {
+                    slidePreview.classList.add('active');
+                }
+
+                slidePreview.innerHTML = `
+                    <div class="slide-number">${index + 1}</div>
+                    <div class="slide-frame-container">
+                        <iframe class="slide-frame" src="${slide}" frameborder="0"></iframe>
+                        <div class="audio-indicator">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                            </svg>
+                            Audio
+                        </div>
+                    </div>
+                `;
+
+                slidePreview.addEventListener('click', () => {
+                    startPresentation(index);
+                });
+
+                // Wait for iframe to load before scaling
+                const iframe = slidePreview.querySelector('.slide-frame');
+                iframe.addEventListener('load', () => {
+                    loadedCount++;
+                    if (loadedCount === totalSlides) {
+                        if (viewMode === 'grid') {
+                            setTimeout(scaleGridPreviews, 100);
+                        } else if (viewMode === 'list') {
+                            setTimeout(scaleListPreviews, 100);
+                        }
+                    }
+                });
+
+                previewContainer.appendChild(slidePreview);
+            });
+        }
+
+        // Setup view mode buttons
+        function setupViewModeButtons() {
+            gridViewBtn.addEventListener('click', () => setViewMode('grid'));
+            listViewBtn.addEventListener('click', () => setViewMode('list'));
+        }
+
+        // Setup audio controls
+        function setupAudioControls() {
+            playPauseBtn.addEventListener('click', toggleAudio);
+            audioProgress.addEventListener('click', seekAudio);
+            
+            speedBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    speedBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentSpeed = parseFloat(btn.dataset.speed);
+                    if (currentAudio) {
+                        currentAudio.playbackRate = currentSpeed;
+                    }
+                });
+            });
+            
+            // Setup subtitle controls
+            subtitleToggle.addEventListener('click', toggleSubtitles);
+        }
+
+        // Set view mode
+        function setViewMode(mode) {
+            viewMode = mode;
+            if (mode === 'grid') {
+                previewContainer.classList.remove('list-view');
+                gridViewBtn.classList.add('active');
+                listViewBtn.classList.remove('active');
+                setTimeout(scaleGridPreviews, 100);
+            } else {
+                previewContainer.classList.add('list-view');
+                gridViewBtn.classList.remove('active');
+                listViewBtn.classList.add('active');
+                setTimeout(scaleListPreviews, 100);
+            }
+        }
+
+        // Scale list previews
+        function scaleListPreviews() {
+            if (viewMode !== 'list') return;
+            const slidePreviews = document.querySelectorAll('.preview-container.list-view .slide-preview');
+            slidePreviews.forEach(preview => {
+                const frame = preview.querySelector('.slide-frame');
+                if (!frame) return;
+                const container = frame.closest('.slide-frame-container');
+                const containerWidth = container.clientWidth;
+                const scale = containerWidth / 1280;
+                frame.style.transform = `scale(${scale})`;
+            });
+        }
+
+        // Scale grid previews
+        function scaleGridPreviews() {
+            if (viewMode !== 'grid') return;
+            const slidePreviews = document.querySelectorAll('.preview-container.grid-view .slide-preview');
+            slidePreviews.forEach(preview => {
+                const frame = preview.querySelector('.slide-frame');
+                if (!frame) return;
+                const container = frame.closest('.slide-frame-container');
+                const containerWidth = container.clientWidth;
+                const scale = containerWidth / 1280;
+                frame.style.transform = `scale(${scale})`;
+            });
+        }
+
+        // Start presentation with auto-play
+        function startPresentation(slideIndex = 0) {
+            currentSlideIndex = slideIndex;
+            isAutoPlayEnabled = true;
+            presentationMode.style.display = 'flex';
+            updateSlide();
+            loadCurrentAudio();
+            
+            // Add fullscreen class to unified controls
+            unifiedControls.classList.add('fullscreen');
+            
+            // Start auto-play after a short delay to ensure audio is loaded
+            setTimeout(() => {
+                if (isAutoPlayEnabled) {
+                    toggleAudio();
+                }
+            }, 1000);
+        }
+
+        // Exit presentation
+        function exitPresentation() {
+            stopAudio();
+            isAutoPlayEnabled = false;
+            presentationMode.style.display = 'none';
+            unifiedControls.classList.remove('fullscreen');
+        }
+
+        // Update slide
+        function updateSlide() {
+            presentationSlide.src = slides[currentSlideIndex];
+            currentSlideElement.textContent = currentSlideIndex + 1;
+            
+            // Update progress
+            const progress = ((currentSlideIndex + 1) / slides.length) * 100;
+            progressFill.style.width = `${progress}%`;
+            
+            // Update preview highlighting
+            document.querySelectorAll('.slide-preview').forEach((preview, index) => {
+                if (index === currentSlideIndex) {
+                    preview.classList.add('active');
+                } else {
+                    preview.classList.remove('active');
+                }
+            });
+
+            // Scale slide
+            setTimeout(scalePresentationSlide, 100);
+            
+            // Load and sync audio
+            loadCurrentAudio();
+            updateAudioIndicator();
+        }
+
+        // Scale presentation slide
+        function scalePresentationSlide() {
+            const container = document.querySelector('.presentation-slide-container');
+            const containerWidth = container.clientWidth - 40;
+            const containerHeight = container.clientHeight - 40;
+
+            if (isFullscreen) {
+                const viewportWidth = window.innerWidth;
+                const viewportHeight = window.innerHeight - 160; // Account for both controls height (80px + 80px)
+                const scaleX = viewportWidth / 1280;
+                const scaleY = viewportHeight / 720;
+                const scale = Math.min(scaleX, scaleY);
+                presentationSlide.style.transform = `scale(${scale})`;
+            } else {
+                const scaleX = containerWidth / 1280;
+                const scaleY = containerHeight / 720;
+                const scale = Math.min(scaleX, scaleY);
+                presentationSlide.style.transform = `scale(${scale})`;
+            }
+        }
+
+        // Audio functions
+        function loadCurrentAudio() {
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+            }
+
+            const audioSrc = audioFiles[currentSlideIndex];
+            if (audioSrc) {
+                currentAudio = new Audio(audioSrc);
+                currentAudio.playbackRate = currentSpeed;
+                
+                currentAudio.addEventListener('loadedmetadata', () => {
+                    audioDuration.textContent = formatTime(currentAudio.duration);
+                });
+
+                currentAudio.addEventListener('timeupdate', updateAudioProgress);
+                currentAudio.addEventListener('ended', onAudioEnded);
+                currentAudio.addEventListener('error', (e) => {
+                    console.warn('Audio loading error:', e);
+                });
+            }
+        }
+
+        function toggleAudio() {
+            if (!currentAudio) return;
+
+            if (isPlaying) {
+                currentAudio.pause();
+                playPauseBtn.innerHTML = '▶';
+                isPlaying = false;
+            } else {
+                currentAudio.play().then(() => {
+                    playPauseBtn.innerHTML = '⏸';
+                    isPlaying = true;
+                }).catch(e => {
+                    console.warn('Audio play failed:', e);
+                });
+            }
+        }
+
+        function stopAudio() {
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+            }
+            playPauseBtn.innerHTML = '▶';
+            isPlaying = false;
+        }
+
+        function updateAudioProgress() {
+            if (!currentAudio) return;
+            
+            const progress = (currentAudio.currentTime / currentAudio.duration) * 100;
+            audioProgressFill.style.width = `${progress}%`;
+            audioCurrentTime.textContent = formatTime(currentAudio.currentTime);
+            
+            // Update subtitles
+            updateCurrentSubtitle();
+        }
+
+        function seekAudio(e) {
+            if (!currentAudio) return;
+            
+            const rect = audioProgress.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            currentAudio.currentTime = percent * currentAudio.duration;
+        }
+
+        function onAudioEnded() {
+            playPauseBtn.innerHTML = '▶';
+            isPlaying = false;
+            
+            // Auto advance to next slide if auto-play is enabled
+            if (isAutoPlayEnabled && currentSlideIndex < slides.length - 1) {
+                setTimeout(() => {
+                    nextSlide();
+                    if (isAutoPlayEnabled) {
+                        setTimeout(() => {
+                            toggleAudio();
+                        }, 500);
+                    }
+                }, 1000);
+            }
+        }
+
+        function updateAudioIndicator() {
+            // Update audio indicator on current slide preview
+            document.querySelectorAll('.slide-preview').forEach((preview, index) => {
+                const indicator = preview.querySelector('.audio-indicator');
+                if (index === currentSlideIndex) {
+                    indicator.classList.add('playing');
+                } else {
+                    indicator.classList.remove('playing');
+                }
+            });
+        }
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // Subtitle functions
+        function toggleSubtitles() {
+            subtitlesEnabled = !subtitlesEnabled;
+            subtitleToggle.classList.toggle('active', subtitlesEnabled);
+            subtitleToggle.textContent = subtitlesEnabled ? '🎬 Hide Subtitles' : '🎬 Subtitles';
+            
+            if (!subtitlesEnabled) {
+                hideSubtitles();
+            } else {
+                updateCurrentSubtitle();
+            }
+        }
+
+        function updateCurrentSubtitle() {
+            if (!subtitlesEnabled || !currentAudio) return;
+            
+            const currentTime = currentAudio.currentTime;
+            const subtitle = getCurrentSubtitle(currentSlideIndex, currentTime);
+            
+            if (subtitle && subtitle !== currentSubtitle) {
+                displaySubtitle(subtitle);
+                currentSubtitle = subtitle;
+            }
+        }
+
+        function getCurrentSubtitle(slideIndex, currentTime) {
+            // Simple mapping based on slide index and estimated time
+            const slideSubtitle = subtitleData[slideIndex];
+            if (!slideSubtitle) return null;
+            
+            // Estimate timing based on audio length (this is a simplified approach)
+            const estimatedDuration = 20; // Average 20 seconds per slide
+            const slideStartTime = slideIndex * estimatedDuration;
+            const slideEndTime = (slideIndex + 1) * estimatedDuration;
+            
+            if (currentTime >= slideStartTime && currentTime < slideEndTime) {
+                return slideSubtitle;
+            }
+            
+            return null;
+        }
+
+        function displaySubtitle(subtitle) {
+            if (!subtitlesEnabled) return;
+            
+            clearTimeout(subtitleHideTimeout);
+            
+            subtitleEnglish.textContent = subtitle.english;
+            subtitleChinese.textContent = subtitle.chinese;
+            subtitleContainer.classList.add('show');
+            
+            // Auto hide after 5 seconds
+            subtitleHideTimeout = setTimeout(() => {
+                hideSubtitles();
+            }, 5000);
+        }
+
+        function hideSubtitles() {
+            subtitleContainer.classList.remove('show');
+            clearTimeout(subtitleHideTimeout);
+            currentSubtitle = null;
+        }
+
+        // Navigation functions
+        function nextSlide() {
+            if (currentSlideIndex < slides.length - 1) {
+                currentSlideIndex++;
+                updateSlide();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlideIndex > 0) {
+                currentSlideIndex--;
+                updateSlide();
+            }
+        }
+
+        // Fullscreen functions
+        function toggleFullscreen() {
+            if (!isFullscreen) {
+                enterFullscreen();
+            } else {
+                exitFullscreen();
+            }
+        }
+
+        function enterFullscreen() {
+            const element = presentationMode;
+            if (element.requestFullscreen) {
+                element.requestFullscreen();
+            } else if (element.webkitRequestFullscreen) {
+                element.webkitRequestFullscreen();
+            } else if (element.mozRequestFullScreen) {
+                element.mozRequestFullScreen();
+            } else if (element.msRequestFullscreen) {
+                element.msRequestFullscreen();
+            }
+        }
+
+        function exitFullscreen() {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
+        }
+
+        function handleFullscreenChange() {
+            isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || 
+                             document.mozFullScreenElement || document.msFullscreenElement);
+            scalePresentationSlide();
+        }
+
+        function showControlsTemporarily() {
+            unifiedControls.classList.add('show');
+            
+            clearTimeout(controlsTimeout);
+            controlsTimeout = setTimeout(() => {
+                unifiedControls.classList.remove('show');
+            }, 3000);
+        }
+
+        // Event listeners
+        playButton.addEventListener('click', () => startPresentation(0));
+        prevButton.addEventListener('click', () => {
+            prevSlide();
+            showControlsTemporarily();
+        });
+        nextButton.addEventListener('click', () => {
+            nextSlide();
+            showControlsTemporarily();
+        });
+        exitButton.addEventListener('click', exitPresentation);
+        fullscreenToggle.addEventListener('click', () => {
+            toggleFullscreen();
+            showControlsTemporarily();
+        });
+
+        // Fullscreen change listeners
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+        document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+        document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+        // Mouse movement in fullscreen mode
+        presentationMode.addEventListener('mousemove', showControlsTemporarily);
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (presentationMode.style.display === 'flex') {
+                if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'n') {
+                    nextSlide();
+                    showControlsTemporarily();
+                } else if (e.key === 'ArrowLeft' || e.key === 'p') {
+                    prevSlide();
+                    showControlsTemporarily();
+                } else if (e.key === 'Escape') {
+                    if (isFullscreen) {
+                        exitFullscreen();
+                    } else {
+                        exitPresentation();
+                    }
+                } else if (e.key === 'f' || e.key === 'F') {
+                    toggleFullscreen();
+                    showControlsTemporarily();
+                } else if (e.key === ' ' || e.key === 'k') {
+                    e.preventDefault();
+                    toggleAudio();
+                    showControlsTemporarily();
+                }
+            }
+        });
+
+        // Initialize when page loads
+        window.addEventListener('load', initViewer);
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (presentationMode.style.display === 'flex') {
+                scalePresentationSlide();
+            }
+            if (viewMode === 'grid') {
+                scaleGridPreviews();
+            } else if (viewMode === 'list') {
+                scaleListPreviews();
+            }
+        });
+    </script>
+</body>
+</html>

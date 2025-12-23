@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slide 12 - Solution Overview</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { margin: 0; padding: 0; overflow: hidden; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background: #F5F5F5; }
+        .slide-container { width: 1280px; height: 720px; padding: 60px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; }
+        .title { font-size: 56px; font-weight: 700; color: #003366; text-align: center; margin-bottom: 80px; }
+        .steps { display: flex; justify-content: space-between; position: relative; }
+        .steps::before { content: ''; position: absolute; top: 40px; left: 50px; right: 50px; height: 4px; background: #DDD; z-index: 0; }
+        .step { position: relative; z-index: 1; text-align: center; width: 250px; }
+        .circle { width: 80px; height: 80px; background: #003366; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 30px; border: 5px solid #F5F5F5; font-size: 32px; font-weight: 700; }
+        .step-title { font-size: 24px; font-weight: 700; color: #333; margin-bottom: 10px; }
+        .step-desc { font-size: 18px; color: #666; line-height: 1.4; }
+        /* Active/Accent colors for different strategies */
+        .s1 .circle { background: #E63946; } /* SO */
+        .s2 .circle { background: #FFCC00; color: #003366; } /* WO */
+        .s3 .circle { background: #003366; } /* ST */
+        .s4 .circle { background: #457B9D; } /* WT */
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="title">The Four Paths to Evergreen</div>
+        <div class="steps">
+            <div class="step s1">
+                <div class="circle">SO</div>
+                <div class="step-title">Offensive Play</div>
+                <div class="step-desc">Leverage Strengths<br>Seize Opportunities</div>
+            </div>
+            <div class="step s2">
+                <div class="circle">WO</div>
+                <div class="step-title">Turnaround</div>
+                <div class="step-desc">Fix Weaknesses<br>New Demands</div>
+            </div>
+            <div class="step s3">
+                <div class="circle">ST</div>
+                <div class="step-title">Defensive Play</div>
+                <div class="step-desc">Protect Assets<br>Against Threats</div>
+            </div>
+            <div class="step s4">
+                <div class="circle">WT</div>
+                <div class="step-title">Diversify</div>
+                <div class="step-desc">Avoid Threats<br>Minimize Weakness</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

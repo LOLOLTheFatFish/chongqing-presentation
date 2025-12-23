@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slide 10 - Discovery Spotlight</title>
+    <style>
+        body { margin: 0; padding: 0; overflow: hidden; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background: #000; color: white; }
+        .slide-container { width: 1280px; height: 720px; position: relative; }
+        /* Darkened Image Background */
+        .bg { position: absolute; width: 100%; height: 100%; object-fit: cover; opacity: 0.3; filter: grayscale(50%); }
+        /* Spotlight Effect via CSS Radial Gradient */
+        .spotlight { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 70% 50%, rgba(0, 51, 102, 0.4) 0%, rgba(0,0,0,0.9) 60%); }
+        .content { position: absolute; top: 50%; left: 100px; transform: translateY(-50%); max-width: 600px; }
+        .reveal-text { font-size: 56px; font-weight: 700; line-height: 1.2; margin-bottom: 30px; }
+        .highlight { color: #FFCC00; border-bottom: 4px solid #FFCC00; }
+        .sub-text { font-size: 28px; opacity: 0.8; }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <img src="images/hero_skyline.webp" class="bg" alt="Dark City">
+        <div class="spotlight"></div>
+        <div class="content">
+            <div class="reveal-text">But the spotlight reveals an <span class="highlight">untapped opportunity</span>...</div>
+            <div class="sub-text">Beyond domestic tourists, a new market awaits.</div>
+        </div>
+    </div>
+</body>
+</html>

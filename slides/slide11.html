@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slide 11 - Data Breakthrough</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+    <style>
+        body { margin: 0; padding: 0; overflow: hidden; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background: #FFFFFF; color: #1A1A1A; }
+        .slide-container { width: 1280px; height: 720px; padding: 60px; box-sizing: border-box; display: flex; flex-direction: column; }
+        .header { font-size: 48px; font-weight: 700; color: #003366; margin-bottom: 20px; }
+        .sub { font-size: 24px; color: #666; margin-bottom: 40px; }
+        #chart { width: 100%; height: 450px; }
+        .highlight-box { position: absolute; top: 180px; right: 100px; background: #E63946; color: white; padding: 20px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .highlight-val { font-size: 56px; font-weight: 700; }
+        .highlight-label { font-size: 18px; }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="header">International Tourism Growth</div>
+        <div class="sub">A clear signal of shifting market dynamics (2023-2024)</div>
+        <div id="chart"></div>
+        <div class="highlight-box">
+            <div class="highlight-val">+183%</div>
+            <div class="highlight-label">Inbound Growth</div>
+        </div>
+    </div>
+    <script>
+        var chartDom = document.getElementById('chart');
+        var myChart = echarts.init(chartDom);
+        var option = {
+            color: ['#003366'],
+            grid: { left: '5%', right: '25%', bottom: '10%', top: '10%', containLabel: true },
+            xAxis: { type: 'category', data: ['Q1', 'Q2', 'Q3', 'Q4'], axisLine: { lineStyle: { color: '#999' } } },
+            yAxis: { type: 'value', splitLine: { lineStyle: { type: 'dashed' } } },
+            series: [{
+                data: [120, 150, 220, 340],
+                type: 'bar',
+                barWidth: '40%',
+                itemStyle: { borderRadius: [5, 5, 0, 0] },
+                label: { show: true, position: 'top', formatter: '{c}k' }
+            }]
+        };
+        myChart.setOption(option);
+    </script>
+</body>
+</html>

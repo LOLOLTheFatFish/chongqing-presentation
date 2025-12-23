@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slide 18 - ST Implementation</title>
+    <style>
+        body { margin: 0; padding: 0; overflow: hidden; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+        .slide-container { width: 1280px; height: 720px; display: flex; position: relative; }
+        .half { flex: 1; position: relative; overflow: hidden; }
+        .bg { width: 100%; height: 100%; object-fit: cover; transition: transform 5s; }
+        .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; flex-direction: column; }
+        .label { color: white; font-size: 40px; font-weight: 700; border-bottom: 3px solid #FFCC00; padding-bottom: 10px; margin-bottom: 20px; }
+        .sub { color: #DDD; font-size: 24px; max-width: 400px; text-align: center; }
+        .arrow { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; font-size: 60px; color: #FFCC00; background: #003366; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 5px 20px rgba(0,0,0,0.5); }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="half">
+            <img src="images/hero_skyline.webp" class="bg" alt="Cyberpunk">
+            <div class="overlay">
+                <div class="label">The Viral Surface</div>
+                <div class="sub">8D Magic, Neon Lights, Hotpot</div>
+            </div>
+        </div>
+        <div class="arrow">→</div>
+        <div class="half">
+            <img src="images/three_gorges.jpg" class="bg" alt="History">
+            <div class="overlay">
+                <div class="label">The Cultural Depth</div>
+                <div class="sub">Three Gorges History, Bayu Heritage</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
